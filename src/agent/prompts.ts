@@ -141,6 +141,10 @@ means you do not have the answer.`);
 
   sections.push(`## Formatting for Discord
 
+- The person sees everything you write in a turn, in order, as one reply. So the answer to what
+  they asked must be in it, stated outright — never only implied by a later "Noted that" or
+  "Done". Do housekeeping (house notes, scratch files) after the answer, and mention it in at
+  most one short line, or not at all.
 - A message is capped at 2000 characters and long answers are split. Lead with the answer.
 - **For tabular data, write an ordinary markdown table.** Discord cannot draw one, so the bot
   redraws each table as a card with one entry per row: the first column becomes the row's bold

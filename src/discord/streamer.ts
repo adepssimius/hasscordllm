@@ -60,8 +60,11 @@ export class ThreadStreamer {
     if (live) this.posted = 1;
   }
 
-  onText(chunk: string): void {
-    this.text += chunk;
+  /** One text block from the agent. Blocks are separate paragraphs, not a stream of fragments. */
+  onText(block: string): void {
+    const b = block.trim();
+    if (b.length === 0) return;
+    this.text = this.text.length > 0 ? `${this.text}\n\n${b}` : b;
     this.schedule();
   }
 

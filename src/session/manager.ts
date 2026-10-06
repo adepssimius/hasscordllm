@@ -397,13 +397,13 @@ export class SessionManager {
       );
     }
 
-    const text = outcome.ok ? outcome.result : chunks.join("");
+    const text = replyText(chunks, outcome.ok ? outcome.result : "");
     const wasAborted = this.aborted.has(session.id);
 
     // Step 4 — turn state and session counters move together.
     store.turns.finish(turnId, {
       status: outcome.ok ? "ok" : wasAborted ? "aborted" : "error",
-      result: outcome.ok ? outcome.result : text || null,
+      result: text || null,
       error: outcome.ok ? null : outcome.error,
       errorSubtype: outcome.ok ? null : (outcome.subtype ?? null),
       numTurns: outcome.numTurns,
@@ -417,7 +417,7 @@ export class SessionManager {
       blocked: false,
       turnId,
       ok: outcome.ok,
-      text: outcome.ok ? outcome.result : `${describeFailure(outcome.error, wasAborted)}${text ? `\n\n${text}` : ""}`,
+      text: outcome.ok ? text : `${describeFailure(outcome.error, wasAborted)}${text ? `\n\n${text}` : ""}`,
       numTurns: outcome.numTurns,
       costUsd: outcome.costUsd,
       deniedTools: denied,
@@ -454,6 +454,20 @@ export function recoverInterrupted(store: Store, log: Logger): { interrupted: re
     log.warn({ interrupted: orphans.length, sessionsReset: reset }, "recovered from an unclean shutdown");
   }
   return { interrupted: sessions };
+}
+
+/**
+ * The reply, made of everything the agent wrote this turn, in order.
+ *
+ * Not the SDK's `result`: that is only the final text block. An agent that
+ * answers, then tidies up (updates the house notes) and signs off with "Noted
+ * that for next time" would otherwise deliver the sign-off and drop the
+ * answer — which is exactly what happened in the first real thread.
+ * `result` is the fallback for a run that produced no text blocks we saw.
+ */
+export function replyText(blocks: readonly string[], result: string): string {
+  const parts = blocks.map((b) => b.trim()).filter((b) => b.length > 0);
+  return parts.length > 0 ? parts.join("\n\n") : result;
 }
 
 function describeFailure(error: string, aborted: boolean): string {
